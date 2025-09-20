@@ -57,7 +57,7 @@ INPUT FORMAT: You will receive:
 - newPrompt: The user's latest instruction
 - existingAssets: Object mapping asset names to their URLs
 
-TASK: Modify the currentCode to implement the user's newPrompt, taking the promptHistory and existingAssets into account. If the prompt implies a new visual element or change that requires an image, you MUST indicate an image should be generated.
+TASK: Modify the currentCode to implement the user's newPrompt. The existingAssets object I provide shows you what image URLs are available - use these URLs in your code when loading images. If the prompt requires a new image that isn't in existingAssets, indicate it should be generated.
 
 OUTPUT FORMAT: You MUST ONLY output a valid JSON object containing three keys:
 - "newCode": a string with the complete, updated JavaScript code
@@ -66,12 +66,12 @@ OUTPUT FORMAT: You MUST ONLY output a valid JSON object containing three keys:
 
 CONSTRAINTS:
 1. DO NOT use any external libraries or dependencies. Only use standard browser JavaScript and the HTML5 Canvas API.
-2. If currentCode is empty, create a basic Geometry Dash-style game template.
-3. Ensure the generated code is a single, complete script.
+2. If currentCode is empty, return it as-is (a Geometry Dash template is already provided).
+3. Ensure the generated code is a single, complete script that can run independently.
 4. When generating an imageGenerationPrompt, make the description specific (e.g., "A side-view 32x32 pixel art blue cube").
 5. All variables should be properly scoped within the script.
 6. The canvas element will have id="gameCanvas" and will already exist in the DOM.
-7. When loading images, use the asset URLs from existingAssets or placeholder rectangles for pending images.
+7. IMPORTANT: Do NOT reference 'existingAssets' variable in the generated game code - it's only metadata for you to know what image URLs are available. Instead, hardcode the actual URLs from existingAssets when loading images in the code.
 
 IMPORTANT: Return ONLY valid JSON. Do not include any markdown formatting or code blocks.`;
 

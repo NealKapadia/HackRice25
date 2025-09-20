@@ -8,6 +8,13 @@ const ctx = canvas.getContext("2d");
 canvas.width = 800;
 canvas.height = 400;
 
+// Asset URLs (will be populated by AI when images are generated)
+const assetUrls = {
+  player: null,
+  spike: null,
+  platform: null
+};
+
 // Game state
 const game = {
   player: {
@@ -34,12 +41,23 @@ const game = {
   frameCount: 0
 };
 
-// Load sprites (will be populated with AI-generated images)
+// Sprite objects (loaded from assetUrls)
 const sprites = {
   player: null,
   spike: null,
   platform: null
 };
+
+// Load sprites from URLs if available
+function loadAssets() {
+  Object.keys(assetUrls).forEach(key => {
+    if (assetUrls[key]) {
+      loadImage(assetUrls[key], (img) => {
+        sprites[key] = img;
+      });
+    }
+  });
+}
 
 // Initialize game
 function init() {
@@ -49,6 +67,9 @@ function init() {
   game.score = 0;
   game.gameOver = false;
   game.frameCount = 0;
+  
+  // Load any available assets
+  loadAssets();
   
   // Generate initial obstacles
   generateObstacle();
