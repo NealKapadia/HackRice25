@@ -83,7 +83,7 @@ cd backend
 
 # Add your Gemini API key as a secret
 wrangler secret put GEMINI_API_KEY
-# When prompted, paste: AIzaSyA3rg0QYItzcykI50WL9dTqmPLYGvkiAlo
+# When prompted, paste your Gemini API key
 ```
 
 #### C. Deploy the Worker
