@@ -5,9 +5,16 @@ import { LiveCanvas } from './components/LiveCanvas';
 import { BlueprintPanel } from './components/BlueprintPanel';
 import './App.css';
 
+interface GeneratedAsset {
+  type: 'image';
+  name: string;
+  url: string;
+}
+
 interface GenerationResponse {
   newCode: string;
   explanation: string;
+  generatedAssets?: GeneratedAsset[];
 }
 
 interface ErrorResponse {
@@ -18,6 +25,7 @@ function App() {
   const [currentCode, setCurrentCode] = useState<string>('');
   const [promptHistory, setPromptHistory] = useState<string[]>([]);
   const [codeHistory, setCodeHistory] = useState<string[]>([]);
+  const [existingAssets, setExistingAssets] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [explanation, setExplanation] = useState<string>('');
@@ -32,15 +40,25 @@ function App() {
         {
           currentCode,
           promptHistory,
-          newPrompt: prompt
+          newPrompt: prompt,
+          existingAssets
         }
       );
 
-      const { newCode, explanation } = response.data;
+      const { newCode, explanation, generatedAssets } = response.data;
       
       // Save to history before updating
       if (currentCode) {
         setCodeHistory(prev => [...prev, currentCode]);
+      }
+      
+      // Update existing assets if new ones were generated
+      if (generatedAssets && generatedAssets.length > 0) {
+        const newAssets = { ...existingAssets };
+        generatedAssets.forEach(asset => {
+          newAssets[asset.name] = asset.url;
+        });
+        setExistingAssets(newAssets);
       }
       
       setCurrentCode(newCode);
@@ -57,7 +75,7 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  }, [currentCode, promptHistory]);
+  }, [currentCode, promptHistory, existingAssets]);
 
   const handleReset = useCallback(() => {
     if (codeHistory.length > 0) {
