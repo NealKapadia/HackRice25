@@ -20,7 +20,7 @@ This will automatically start both servers for you!
 
 **Gemini API Key is already configured!**
 - Location: `backend/.dev.vars`
-- Key: AIzaSyChSz5ekfpu5Bl1Nbe6SK1iKJ9kTjGAxu0
+- Key: [API key configured in environment]
 
 ## 📁 Project Structure
 ```
