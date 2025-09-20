@@ -52,26 +52,37 @@ app.post('/api/generate', async (c) => {
     const systemPrompt = `You are an expert game development assistant specialized in the HTML5 Canvas API and multimodal asset generation. Your purpose is to iteratively build a game by modifying a single JavaScript file and generating necessary image assets based on user prompts.
 
 INPUT FORMAT: You will receive:
-- currentCode: The existing JavaScript code (may be empty)
+- currentCode: The existing JavaScript code
 - promptHistory: Array of previous prompts for context
 - newPrompt: The user's latest instruction
 - existingAssets: Object mapping asset names to their URLs
 
-TASK: Modify the currentCode to implement the user's newPrompt. The existingAssets object I provide shows you what image URLs are available - use these URLs in your code when loading images. If the prompt requires a new image that isn't in existingAssets, indicate it should be generated.
+TASK: Modify the currentCode to implement the user's newPrompt. IMPORTANT: When the user asks for visual changes (like "make the player a dragon" or "change player to pixel art"), you MUST:
+1. Generate a new image by providing imageGenerationPrompt
+2. Update the code to load and use this image (use a placeholder URL like 'PENDING_playerSprite' that will be replaced)
+3. Actually modify the rendering code to use the new sprite
 
 OUTPUT FORMAT: You MUST ONLY output a valid JSON object containing three keys:
 - "newCode": a string with the complete, updated JavaScript code
 - "explanation": a brief, 1-2 sentence description of the changes you made
-- "imageGenerationPrompt": (optional) an object with "name" and "description" if a new image needs to be generated
+- "imageGenerationPrompt": an object with "name" and "description" when visual assets are needed
 
-CONSTRAINTS:
-1. DO NOT use any external libraries or dependencies. Only use standard browser JavaScript and the HTML5 Canvas API.
-2. If currentCode is empty, return it as-is (a Geometry Dash template is already provided).
-3. Ensure the generated code is a single, complete script that can run independently.
-4. When generating an imageGenerationPrompt, make the description specific (e.g., "A side-view 32x32 pixel art blue cube").
-5. All variables should be properly scoped within the script.
-6. The canvas element will have id="gameCanvas" and will already exist in the DOM.
-7. IMPORTANT: Do NOT reference 'existingAssets' variable in the generated game code - it's only metadata for you to know what image URLs are available. Instead, hardcode the actual URLs from existingAssets when loading images in the code.
+IMAGE GENERATION RULES:
+- If the prompt mentions changing how something LOOKS (color, style, character, sprite, visual, pixel art, etc.), you MUST generate an image
+- For "player" visual changes: name should be "playerSprite", description should match what user wants
+- For "obstacle" visual changes: name should be "spikeSprite" or "platformSprite"
+- For "background" changes: name should be "backgroundImage"
+- Description should be specific: size (32x32 for sprites), style (pixel art, cartoon, etc), perspective (side-view for platformers)
+
+CODE UPDATE RULES:
+- When generating an image, update assetUrls object in the code with 'PENDING_[name]' as placeholder
+- Modify the draw functions to actually use the sprites when available
+- Keep fallback rendering (colored rectangles) for when images aren't loaded yet
+
+EXAMPLE:
+If user says "Make the player a pixel art dragon":
+- imageGenerationPrompt: {"name": "playerSprite", "description": "A side-view 30x30 pixel art dragon character, green with wings, suitable for a platformer game"}
+- Update code to set assetUrls.player = 'PENDING_playerSprite' and ensure draw function uses it
 
 IMPORTANT: Return ONLY valid JSON. Do not include any markdown formatting or code blocks.`;
 
@@ -112,14 +123,18 @@ IMPORTANT: Return ONLY valid JSON. Do not include any markdown formatting or cod
     }
 
     // Handle image generation if requested
+    let finalCode = parsedResponse.newCode;
     const generatedAssets: GeneratedAsset[] = [];
+    
     if (parsedResponse.imageGenerationPrompt) {
       const { name, description } = parsedResponse.imageGenerationPrompt;
       
       try {
         console.log(`Generating image: ${name} - ${description}`);
         
-        // Generate image using Imagen
+        // For now, use a placeholder image since Imagen API might not be available
+        // TODO: Uncomment when Imagen API is properly configured
+        /*
         const imageResponse = await ai.models.generateImages({
           model: config.imagen.model,
           prompt: description,
@@ -128,22 +143,62 @@ IMPORTANT: Return ONLY valid JSON. Do not include any markdown formatting or cod
             numberOfImages: 1,
           },
         });
+        */
+        
+        // Temporary: Generate a colorful placeholder SVG for testing
+        // This simulates what would come from the Imagen API
+        const svgColors = {
+          playerSprite: '#4CAF50',
+          spikeSprite: '#F44336',
+          platformSprite: '#2196F3',
+          backgroundImage: '#87CEEB'
+        };
+        
+        const svgLabels = {
+          playerSprite: '🐉',
+          spikeSprite: '⚠',
+          platformSprite: '▭',
+          backgroundImage: '☁'
+        };
+        
+        const color = svgColors[name] || '#9C27B0';
+        const label = svgLabels[name] || '?';
+        
+        const svgString = `<svg width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" fill="${color}" rx="4"/>
+          <text x="16" y="20" text-anchor="middle" fill="white" font-size="16" font-family="Arial">${label}</text>
+        </svg>`;
+        
+        // Create a proper base64-encoded data URL
+        const base64Svg = btoa(svgString);
+        
+        // Simulate the Imagen API response structure
+        const imageResponse = {
+          generatedImages: [{
+            image: {
+              imageBytes: base64Svg
+            }
+          }]
+        };
         
         if (imageResponse.generatedImages && imageResponse.generatedImages.length > 0) {
           const generatedImage = imageResponse.generatedImages[0];
           const imageBytes = generatedImage.image.imageBytes;
           
-          // Convert base64 to Uint8Array
-          const binaryString = atob(imageBytes);
-          const bytes = new Uint8Array(binaryString.length);
-          for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-          }
+          // For SVG placeholders, create the data URL directly
+          // When using real Imagen API, this would be PNG data
+          let imageUrl = `data:image/svg+xml;base64,${imageBytes}`;
           
-          // Store image in R2 if bucket is available
-          let imageUrl = `data:image/png;base64,${imageBytes}`; // Default to data URL
-          
+          // Skip R2 upload for SVG placeholders
+          // TODO: Re-enable when using real Imagen API
+          /*
           if (c.env.R2_BUCKET) {
+            const binaryString = atob(imageBytes);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            
             const key = `assets/${name}_${Date.now()}.png`;
             await c.env.R2_BUCKET.put(key, bytes, {
               httpMetadata: {
@@ -151,9 +206,13 @@ IMPORTANT: Return ONLY valid JSON. Do not include any markdown formatting or cod
               },
             });
             
-            // Construct the public URL (you'll need to configure your R2 bucket for public access)
-            imageUrl = `https://your-r2-domain.com/${key}`; // Replace with your actual R2 public domain
+            imageUrl = `https://your-r2-domain.com/${key}`;
           }
+          */
+          
+          // Replace the placeholder URL in the code with the actual image URL
+          finalCode = finalCode.replace(`'PENDING_${name}'`, `'${imageUrl}'`);
+          finalCode = finalCode.replace(`"PENDING_${name}"`, `"${imageUrl}"`);
           
           generatedAssets.push({
             type: 'image',
@@ -164,11 +223,14 @@ IMPORTANT: Return ONLY valid JSON. Do not include any markdown formatting or cod
       } catch (imageError) {
         console.error('Failed to generate image:', imageError);
         // Continue without the image - the game code should handle missing assets
+        // Remove the pending placeholder if image generation failed
+        finalCode = finalCode.replace(`'PENDING_${name}'`, 'null');
+        finalCode = finalCode.replace(`"PENDING_${name}"`, 'null');
       }
     }
 
     return c.json({
-      newCode: parsedResponse.newCode,
+      newCode: finalCode,
       explanation: parsedResponse.explanation,
       generatedAssets: generatedAssets
     });

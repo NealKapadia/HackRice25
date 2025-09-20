@@ -192,9 +192,15 @@ function draw() {
   ctx.fillStyle = game.ground.color;
   ctx.fillRect(0, canvas.height - game.ground.height, canvas.width, game.ground.height);
   
-  // Draw player
-  if (game.player.sprite && sprites.player) {
-    ctx.drawImage(sprites.player, game.player.x, game.player.y, game.player.width, game.player.height);
+// Draw player
+  if (sprites.player) {
+    try {
+      ctx.drawImage(sprites.player, game.player.x, game.player.y, game.player.width, game.player.height);
+    } catch (e) {
+      // Fallback if image fails to draw
+      ctx.fillStyle = game.player.color;
+      ctx.fillRect(game.player.x, game.player.y, game.player.width, game.player.height);
+    }
   } else {
     ctx.fillStyle = game.player.color;
     ctx.fillRect(game.player.x, game.player.y, game.player.width, game.player.height);
@@ -202,8 +208,24 @@ function draw() {
   
   // Draw obstacles
   for (const obstacle of game.obstacles) {
-    if (obstacle.sprite && sprites[obstacle.type]) {
-      ctx.drawImage(sprites[obstacle.type], obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    if (sprites[obstacle.type]) {
+      try {
+        ctx.drawImage(sprites[obstacle.type], obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+      } catch (e) {
+        // Fallback if image fails to draw
+        ctx.fillStyle = obstacle.color;
+        if (obstacle.type === 'spike') {
+          // Draw triangle for spike
+          ctx.beginPath();
+          ctx.moveTo(obstacle.x + obstacle.width / 2, obstacle.y);
+          ctx.lineTo(obstacle.x, obstacle.y + obstacle.height);
+          ctx.lineTo(obstacle.x + obstacle.width, obstacle.y + obstacle.height);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        }
+      }
     } else {
       ctx.fillStyle = obstacle.color;
       if (obstacle.type === 'spike') {
