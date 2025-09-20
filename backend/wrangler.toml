@@ -2,11 +2,18 @@ name = "genengine-api"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
+# R2 bucket binding for storing generated images
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "genengine-assets"
+
 [env.development]
 vars = { }
+# For local development, R2 won't be available - images will use data URLs
 
 [env.production]
 vars = { }
+# R2 bucket will be available in production
 
 # Note: Add your GEMINI_API_KEY as a secret using:
 # wrangler secret put GEMINI_API_KEY
