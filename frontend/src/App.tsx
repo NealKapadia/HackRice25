@@ -3,6 +3,7 @@ import axios from 'axios';
 import { DirectorPanel } from './components/DirectorPanel';
 import { LiveCanvas } from './components/LiveCanvas';
 import { BlueprintPanel } from './components/BlueprintPanel';
+import AuthenticationButton from './components/AuthenticationButton';
 import './App.css';
 
 interface GeneratedAsset {
@@ -103,6 +104,7 @@ function App() {
       <header className="app-header">
         <h1 className="app-title">🎮 GenEngine</h1>
         <p className="app-tagline">A live, AI-powered game development environment</p>
+        <AuthenticationButton />
       </header>
       
       {error && (
