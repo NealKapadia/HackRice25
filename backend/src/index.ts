@@ -190,4 +190,43 @@ IMPORTANT: Return ONLY valid JSON. Do not include any markdown formatting or cod
   }
 });
 
+// Code explanation endpoint for Ask AI
+app.post('/api/explain', async (c) => {
+  try {
+    const { code, question } = await c.req.json();
+
+    if (!code || typeof code !== 'string') {
+      return c.json({ error: 'Invalid code provided' }, 400);
+    }
+    if (!question || typeof question !== 'string') {
+      return c.json({ error: 'Invalid question provided' }, 400);
+    }
+
+    const ai = new GoogleGenAI({ apiKey: c.env.GEMINI_API_KEY });
+    console.log(`Using Gemini model (explain): ${config.gemini.model}`);
+
+    const systemPrompt = `You are a helpful assistant that explains JavaScript (including TypeScript-like) code for an HTML5 Canvas-based game. Be concise, accurate, and actionable. If asked, you may provide brief examples or suggest improvements, but do not fabricate code behavior. Prefer plain text answers with bullet points when helpful.`;
+
+    const userMessage = `${systemPrompt}\n\nCODE:\n\n${code}\n\nQUESTION:\n${question}`;
+
+    const response = await ai.models.generateContent({
+      model: config.gemini.model,
+      contents: userMessage,
+    });
+    const text = response.text;
+    const answer = (text || '').trim();
+
+    if (!answer) {
+      return c.json({ error: 'Empty response from AI' }, 502);
+    }
+
+    return c.json({ answer });
+  } catch (error) {
+    console.error('Explain error:', error);
+    return c.json({ 
+      error: error instanceof Error ? error.message : 'An error occurred while explaining the code' 
+    }, 500);
+  }
+});
+
 export default app;

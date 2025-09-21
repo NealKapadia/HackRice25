@@ -26,9 +26,109 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Ask AI chat additions */
+.blueprint-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.blueprint-layout {
+  display: flex;
+  gap: 12px;
+  min-height: 0;
+  flex: 1;
+}
+
 .editor-container {
   flex: 1;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  min-width: 0;
+}
+
+.ai-help-btn {
+  background: rgba(255, 255, 255, 0.95);
+  color: #0b74de;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.ai-help-btn:hover {
+  filter: brightness(0.95);
+}
+
+.chat-panel {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.chat-messages {
+  padding: 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.chat-empty {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.chat-msg {
+  margin-bottom: 12px;
+}
+
+.chat-msg .chat-role {
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+/* Ensure both user and AI names are black */
+.chat-msg.user .chat-role { color: #000; }
+.chat-msg.assistant .chat-role { color: #000; }
+
+/* Ensure message content is black */
+.chat-msg .chat-content {
+  color: #000;
+  white-space: pre-wrap;
+  line-height: 1.35;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid #eee;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.chat-send-btn {
+  background: #0b74de;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-send-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
