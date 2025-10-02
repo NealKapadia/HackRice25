@@ -124,21 +124,6 @@ npm run build
 # 5. Set build directory: dist
 ```
 
-## 🏆 Hackathon Tracks & Challenges
-
-### Primary Track: Productivity & Education
-- Enhances developer productivity through rapid prototyping
-- Educational tool connecting natural language to code
-
-### Sponsor Challenges:
-- **Warp**: Best Developer Tool
-- **MLH**: Best Use of Gemini API  
-- **Cloudflare**: Best AI Application Built with Cloudflare
-- **MLH**: Best Use of MongoDB Atlas (post-MVP)
-- **MLH**: Best Use of Auth0 (post-MVP)
-- **Ken Kennedy Institute**: Responsible AI
-- **Persona**: Identity Verification (post-MVP)
-
 ## 📋 MVP Features
 
 - [x] Natural language to code generation
@@ -165,14 +150,6 @@ npm run build
 1. **CORS errors**: Make sure the backend is running and the API URL is correct in your `.env` file
 2. **Canvas not updating**: Check the browser console for JavaScript errors
 3. **API key issues**: Ensure your Gemini API key is properly set in `.dev.vars`
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-MIT License - see LICENSE file for details
 
 ## 🙏 Acknowledgments
 
